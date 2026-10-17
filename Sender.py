@@ -25,7 +25,7 @@ def sender_side():
     print("waiting for a receiver...")
     sender.settimeout(2)
 
-    offer = f"OFFER|{file_name}|{file_size//1000000}mb".encode()
+    offer = f"OFFER|{file_name}|{file_size//1000000:.2f}mb".encode()
     deadline = time.time() + 300
 
     while time.time() < deadline:
@@ -47,7 +47,7 @@ def sender_side():
                     if not chunk:
                         break
                     sender.sendto(chunk, addr)
-                    time.sleep(0.0008)
+                    time.sleep(0.002)
 
             sender.close()
             break
