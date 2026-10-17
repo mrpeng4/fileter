@@ -1,6 +1,7 @@
 import socket
 import time
 import os
+import tqdm
 
 BROADCAST_PORT = 5000
 TCP_PORT = 5003
@@ -52,12 +53,15 @@ def sender_side():
 
     print(f"Receiver connected {addr[0]}, sending...")
 
+    progress_bar = tqdm.tqdm(unit="B", unit_scale=True, unit_divisor=1000, total=file_size)
+
     file = open(user_filepath, "rb")
     while True:
         chunk = file.read(CHUNK_SIZE)
         if chunk == b"":
             break
         connection.sendall(chunk)
+        progress_bar.update(len(chunk))
 
     file.close()
 
