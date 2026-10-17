@@ -2,73 +2,68 @@ import socket
 import time
 import os
 
-PORT = 5001
-BUFFER_SIZE = 1024
-user_showed_up = True
-BATCH = 32
+BROADCAST_PORT = 5000     # receiver listens for the shout here (UDP)
+TCP_PORT = 5003           # the file is sent here (TCP)
+CHUNK_SIZE = 65536
 
 def path_input():
     user_filepath = input("Please provide the path of the file: ")
 
-    file_path = user_filepath
-    file_size_bytes = os.path.getsize(file_path)
-    file_name = os.path.basename(file_path)
+    file_size_bytes = os.path.getsize(user_filepath)
+    file_name = os.path.basename(user_filepath)
 
     return file_name, file_size_bytes, user_filepath
 
-def wait_for_ack(sender):
-    sender.settimeout(1)
-    try:
-        sender.recvfrom(BUFFER_SIZE)
-    except (socket.timeout, ConnectionResetError):
-        pass
-
 def sender_side():
-    global user_showed_up
-
     file_name, file_size, user_filepath = path_input()
-    sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sender.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    sender.bind(("0.0.0.0", 5002))
-    print("waiting for a receiver...")
-    sender.settimeout(2)
 
-    offer = f"OFFER|{file_name}|{file_size//1000000:.2f}mb".encode()
-    deadline = time.time() + 300
+    # UDP socket: used to shout "I have a file"
+    shouter = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    shouter.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
-    while time.time() < deadline:
-        sender.sendto(offer, ("255.255.255.255", 5000))
+    # TCP socket: the begger/receiver connects here to get the chonky file
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server.bind(("0.0.0.0", TCP_PORT))
+    server.listen(1)
+    server.settimeout(2)
+
+    offer = "OFFER|" + file_name + "|" + str(file_size)
+    offer = offer.encode()
+
+    print("Waiting for a receiver...")
+    end_time = time.time() + 300
+    receiver_found = False
+
+    while time.time() < end_time:
+        shouter.sendto(offer, ("255.255.255.255", BROADCAST_PORT))
         try:
-            data, addr = sender.recvfrom(BUFFER_SIZE)
-            user_showed_up = True
-        except socket.timeout:
-            user_showed_up = False
-            continue
-
-        if data == b"READY":
-            sender.sendto(file_name.encode(), addr)
-            sender.sendto(str(file_size).encode(), addr)
-
-            sent_chunks = 0
-            with open(user_filepath, "rb") as f:
-                while True:
-                    chunk = f.read(BUFFER_SIZE)
-                    if not chunk:
-                        break
-                    sender.sendto(chunk, addr)
-                    sent_chunks += 1
-                    if sent_chunks % BATCH == 0:
-                        wait_for_ack(sender)
-
-                if sent_chunks % BATCH != 0:
-                    wait_for_ack(sender)
-
-            sender.close()
+            connection, addr = server.accept()
+            receiver_found = True
             break
+        except socket.timeout:
+            pass
+
+    if receiver_found == False:
+        print("No receiver showed up. File not sent.")
+        shouter.close()
+        server.close()
+        return
+
+    print(f"Receiver connected {addr[0]}, sending...")
+
+    file = open(user_filepath, "rb")
+    while True:
+        chunk = file.read(CHUNK_SIZE)
+        if chunk == b"":
+            break
+        connection.sendall(chunk)
+
+    file.close()
+
+    connection.close()
+    shouter.close()
+    server.close()
+    print("Success!")
 
 sender_side()
-
-if user_showed_up == False:
-    print("No receiver showed up. File not sent.")
-else:
-    print("Success!")
