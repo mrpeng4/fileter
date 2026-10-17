@@ -3,6 +3,7 @@ import tqdm
 
 PORT = 5000
 BUFFER_SIZE = 1024
+BATCH = 32
 
 def receiver_side():
     receiver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -33,11 +34,17 @@ def receiver_side():
         received = 0
         try:
             with open("received_" + file_name, "wb") as f:
-                while received < file_size:
-                    chunk, _ = receiver.recvfrom(BUFFER_SIZE)
-                    f.write(chunk)
-                    received += len(chunk)
-                    progress_bar.update(len(chunk))
+                received = 0
+                chunk_count = 0
+                with open("received_" + file_name, "wb") as f:
+                    while received < file_size:
+                        chunk, _ = receiver.recvfrom(BUFFER_SIZE)
+                        f.write(chunk)
+                        received += len(chunk)
+                        chunk_count += 1
+                        progress_bar.update(len(chunk))
+                        if chunk_count % BATCH == 0 or received >= file_size:
+                            receiver.sendto(b"ACK", addr)
         except socket.timeout:
             print(f"Stalled: got {received} of {file_size} bytes, some packets were lost")
         progress_bar.close()

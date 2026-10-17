@@ -5,6 +5,7 @@ import os
 PORT = 5001
 BUFFER_SIZE = 1024
 user_showed_up = True
+BATCH = 32
 
 def path_input():
     user_filepath = input("Please provide the path of the file: ")
@@ -14,6 +15,13 @@ def path_input():
     file_name = os.path.basename(file_path)
 
     return file_name, file_size_bytes, user_filepath
+
+def wait_for_ack(sender):
+    sender.settimeout(1)
+    try:
+        sender.recvfrom(BUFFER_SIZE)
+    except (socket.timeout, ConnectionResetError):
+        pass
 
 def sender_side():
     global user_showed_up
@@ -41,13 +49,19 @@ def sender_side():
             sender.sendto(file_name.encode(), addr)
             sender.sendto(str(file_size).encode(), addr)
 
+            sent_chunks = 0
             with open(user_filepath, "rb") as f:
                 while True:
                     chunk = f.read(BUFFER_SIZE)
                     if not chunk:
                         break
                     sender.sendto(chunk, addr)
-                    time.sleep(0.002)
+                    sent_chunks += 1
+                    if sent_chunks % BATCH == 0:
+                        wait_for_ack(sender)
+
+                if sent_chunks % BATCH != 0:
+                    wait_for_ack(sender)
 
             sender.close()
             break
