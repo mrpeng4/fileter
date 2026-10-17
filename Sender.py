@@ -2,8 +2,8 @@ import socket
 import time
 import os
 
-BROADCAST_PORT = 5000     # receiver listens for the shout here (UDP)
-TCP_PORT = 5003           # the file is sent here (TCP)
+BROADCAST_PORT = 5000
+TCP_PORT = 5003
 CHUNK_SIZE = 65536
 
 def path_input():

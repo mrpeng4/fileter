@@ -56,6 +56,6 @@ def receiver_side():
     progress_bar.close()
     tcp.close()
 
-    print(f"Saved as received_{file_name} | {received/1000000:.2f}MB )")
+    print(f"Saved as received_{file_name} | {received/1000000:.2f}MB")
 
 receiver_side()
