@@ -2,6 +2,7 @@ import socket
 import tqdm
 import Saver
 from pathlib import Path
+from plyer import notification
 
 PORT = 5000
 TCP_PORT = 5003
@@ -77,6 +78,13 @@ def receiver_side():
     tcp.close()
 
     print(f"Saved as received_{file_name} | {received/1000000:.2f}MB")
+    notification.notify(
+        title="File received!",
+        message="Your file has been received go check and tell me where to save it ;)",
+        app_name="fileter",
+        timeout=15
+    )
+
     print("Where do you want to save the file?")
     saver_input = input("(Enter for saved path, 's' to set new path) Path: ").strip()
     

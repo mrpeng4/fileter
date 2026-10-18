@@ -2,13 +2,14 @@ import socket
 import time
 import os
 import tqdm
+from plyer import notification
 
 BROADCAST_PORT = 5000
 TCP_PORT = 5003
 CHUNK_SIZE = 65536
 
 def path_input():
-    user_filepath = input("Please provide the path of the file: ")
+    user_filepath = input("provide the path of the file: ")
 
     file_size_bytes = os.path.getsize(user_filepath)
     file_name = os.path.basename(user_filepath)
@@ -46,7 +47,13 @@ def sender_side():
             pass
 
     if receiver_found == False:
-        print("No receiver showed up. File not sent.")
+        print("No receiver showed up. File not sent :(")
+        notification.notify(
+            title="File not sent!",
+            message="No receiver showed up. File not sent :(",
+            app_name="fileter",
+            timeout=15
+        )
         shouter.close()
         server.close()
         return
@@ -71,4 +78,10 @@ def sender_side():
     shouter.close()
     server.close()
     print("Success!")
+    notification.notify(
+        title="File Sent!",
+        message="Your file has been sent, am i cool ;)",
+        app_name="fileter",
+        timeout=15
+    )
     print("Come back later ;)")

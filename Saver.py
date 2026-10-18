@@ -45,7 +45,8 @@ def save_file_to_destination(file_name, destination: str = None):
         shutil.move(str(source_file), str(destination_path))
         print(f"Successfully moved {source_file.name} to {destination_folder}")
 
+
     except FileNotFoundError:
-        print("Error: The source file could not be found.")
+        print("Error: The received file could not be found.")
     except PermissionError:
-        print("Error: You do not have permission to access one of the paths.")
+        print("Error: You do not have permission to access the path or the folder.")
