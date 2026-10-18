@@ -77,6 +77,8 @@ def sender_side():
     connection.close()
     shouter.close()
     server.close()
+    progress_bar.close()
+
     print("Success!")
     notification.notify(
         title="File Sent!",

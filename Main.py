@@ -1,6 +1,3 @@
-# This file will ask you to receive or send so my app can function properly
-# Later this will come with a gui first let me finish the basics
-
 import Sender
 import Receiver
 
