@@ -53,6 +53,8 @@ def sender_side():
 
     print(f"Receiver connected {addr[0]}, sending...")
 
+    # just a progress bar idk why can't change the text color
+    # it only lets me change the bar color :(
     progress_bar = tqdm.tqdm(unit="B", unit_scale=True, unit_divisor=1000, total=file_size)
 
     file = open(user_filepath, "rb")
@@ -69,5 +71,4 @@ def sender_side():
     shouter.close()
     server.close()
     print("Success!")
-
-sender_side()
+    print("Come back later ;)")
