@@ -33,6 +33,10 @@ def sender_side():
     offer = "OFFER|" + file_name + "|" + str(file_size)
     offer = offer.encode()
 
+    print(f"File name: {file_name}")
+    print(f"File size: {file_size/1000000:.2f}MB")
+    print(f"File path: {user_filepath}\n")
+
     print("Waiting for a receiver...")
     end_time = time.time() + 300
     receiver_found = False
@@ -58,7 +62,7 @@ def sender_side():
         server.close()
         return
 
-    print(f"Receiver connected {addr[0]}, sending...")
+    print(f"Receiver connected {addr[0]},\nSending files...\n")
 
     # just a progress bar idk why can't change the text color
     # it only lets me change the bar color :(
