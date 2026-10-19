@@ -1,0 +1,66 @@
+name: Build & Release
+
+on:
+  push:
+    branches: ['*']
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      create_release:
+        type: boolean
+        description: 'Create GitHub Release'
+        default: false
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        python-version: ['3.12']
+      fail-fast: false
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt pyinstaller
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller --onefile --name fileter Main.py \
+            --hidden-import=plyer.platforms.${{ matrix.os == 'windows-latest' && 'win' || matrix.os == 'macos-latest' && 'macosx' || 'linux' }}.notification \
+            --collect-all=plyer --collect-all=tqdm
+      - name: Rename artifact for release
+        run: |
+          EXT=""
+          if [ "${{ runner.os }}" = "Windows" ]; then EXT=".exe"; fi
+          mv dist/fileter${EXT} dist/fileter-${{ runner.os }}${EXT}
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fileter-${{ runner.os }}
+          path: dist/fileter-${{ runner.os }}*
+
+  release:
+    needs: build
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch' && inputs.create_release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          files: artifacts/**/fileter-*
+          draft: false
+          prerelease: false
