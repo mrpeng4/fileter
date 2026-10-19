@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 import Saver
 
@@ -24,9 +23,11 @@ def save_with_prompt(file_name: str):
         source_file = Saver.dir_path / file_name
         if source_file.exists():
             source_file.unlink()
-            print(f"Deleted {file_name}")
+            print(f"Deleted Successfully: {file_name}")
+            print("Come back later ;)")
         else:
             print("File not found, nothing to delete.")
+            print("Come back later ;)")
     else:
         print("Invalid choice. Saving to default location.")
         Saver.save_file_to_destination(file_name)

@@ -38,7 +38,7 @@ pip install tqdm plyer
 ## Architecture
 
 ```
-+----------------+           UDP Broadcast (port 5000)           +----------------+
++----------------+           UDP Broadcast (port 5000)            +----------------+
 |    SENDER      |  ------------------------------------------->  |   RECEIVER     |
 |                |  "OFFER|filename|filesize"                     |                |
 | 1. Select file |                                                | 1. Listen      |
@@ -46,24 +46,24 @@ pip install tqdm plyer
 |    server:5003 |                                                |    [1] Yes     |
 | 3. Wait...     |                                                |    [2] No      |
 +----------------+                                                +-------+--------+
-                                                                         |
-                                                                         v
-                                                                +--------+--------+
-                                                                |  TCP Connect    |
-                                                                |  (port 5003)    |
-                                                                |                 |
-                                                                |  Stream chunks  |
-                                                                |  64KB at a time |
-                                                                +--------+--------+
-                                                                         |
-                                                                         v
-                                                                +--------+--------+
-                                                                |  Save Prompt    |
-                                                                |                 |
-                                                                | [y] Yes         | --> Move to saved/default path
-                                                                | [c] Change      | --> Set new path, save there
-                                                                | [d] Delete      | --> Remove temp file
-                                                                +-----------------+
+                                                                          |
+                                                                          v
+                                                                 +--------+--------+
+                                                                 |  TCP Connect    |
+                                                                 |  (port 5003)    |
+                                                                 |                 |
+                                                                 |  Stream chunks  |
+                                                                 |  64KB at a time |
+                                                                 +--------+--------+
+                                                                          |
+                                                                          v
+                                                                 +--------+--------+
+                                                                 |  Save Prompt    |
+                                                                 |                 |
+                                                                 | [y] Yes         | --> Move to saved/default path
+                                                                 | [c] Change      | --> Set new path, save there
+                                                                 | [d] Delete      | --> Remove temp file
+                                                                 +-----------------+
 ```
 
 ## Flowchart
@@ -89,8 +89,8 @@ flowchart TD
     D --> N[Receive OFFER]
     N --> O[Parse filename, size, sender IP]
     O --> P{User wants file?}
-    P -->|No [2]| Q[Exit]
-    P -->|Yes [1]| R[TCP connect to sender:5003]
+    P -->|No| Q[Exit]
+    P -->|Yes| R[TCP connect to sender:5003]
     R --> S[Receive chunks, write temp file]
     S --> T[Progress bar]
     T --> U[Close TCP]

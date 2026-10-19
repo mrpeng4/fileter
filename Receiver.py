@@ -10,7 +10,7 @@ BUFFER_SIZE = 1024
 CHUNK_SIZE = 65536
 
 def receiver_side():
-    #wait for the shout of the broadcast not someone screaming
+    # wait for the shout of the broadcast not someone screaming
     receiver = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     receiver.bind(("0.0.0.0", PORT))
     print("Waiting for a broadcast...")
