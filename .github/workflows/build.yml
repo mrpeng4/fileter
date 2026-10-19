@@ -30,15 +30,46 @@ jobs:
         run: |
           pip install -r requirements.txt pyinstaller
       - name: Build with PyInstaller
+        shell: python
         run: |
-          pyinstaller --onefile --name fileter Main.py \
-            --hidden-import=plyer.platforms.${{ matrix.os == 'windows-latest' && 'win' || matrix.os == 'macos-latest' && 'macosx' || 'linux' }}.notification \
-            --collect-all=plyer --collect-all=tqdm
+          import sys
+          import PyInstaller.__main__
+          
+          platform_map = {
+              'windows-latest': 'win',
+              'macos-latest': 'macosx',
+              'ubuntu-latest': 'linux'
+          }
+          platform = platform_map.get('${{ matrix.os }}', 'linux')
+          
+          args = [
+              '--onefile',
+              '--name', 'fileter',
+              '--hidden-import', f'plyer.platforms.{platform}.notification',
+              '--collect-all', 'plyer',
+              '--collect-all', 'tqdm',
+              'Main.py'
+          ]
+          
+          PyInstaller.__main__.run(args)
       - name: Rename artifact for release
+        shell: python
         run: |
-          EXT=""
-          if [ "${{ runner.os }}" = "Windows" ]; then EXT=".exe"; fi
-          mv dist/fileter${EXT} dist/fileter-${{ runner.os }}${EXT}
+          import os
+          import shutil
+          import sys
+          
+          is_windows = '${{ runner.os }}' == 'Windows'
+          ext = '.exe' if is_windows else ''
+          src = f'dist/fileter{ext}'
+          dst = f'dist/fileter-${{ runner.os }}{ext}'
+          
+          if os.path.exists(src):
+              shutil.move(src, dst)
+              print(f'Renamed {src} -> {dst}')
+          else:
+              print(f'Source not found: {src}')
+              sys.exit(1)
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
