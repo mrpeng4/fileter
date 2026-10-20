@@ -1,16 +1,8 @@
-import argparse
 import sys
-
 import Sender
 import Receiver
 
-__version__ = "0.1.0"
-
-
 def main():
-    parser = argparse.ArgumentParser(description="fileter - Local file transfer over Wi-Fi")
-    parser.add_argument("-v", "--version", action="version", version=f"fileter {__version__}")
-    args = parser.parse_args()
 
     print("+-----------------------------------+")
     print("| [1] Send                          |")
@@ -19,7 +11,11 @@ def main():
     print("+-----------------------------------+")
 
     print("Welcome Love to see you what do you want to do today ;)")
-    user_type = input("Enter your input number: ").lower().strip()
+    try:
+        user_type = input("Enter your input number: ").lower().strip()
+    except (KeyboardInterrupt, EOFError):
+        print("\nGoodbye! Come back when you want to transfer files.")
+        return
 
     if user_type == "2":
         print("You are the Receiver.\n")
@@ -33,7 +29,6 @@ def main():
         print("You canceled the operation.")
         print("Come back later ;)")
         sys.exit(0)
-
 
 if __name__ == "__main__":
     main()
