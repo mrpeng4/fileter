@@ -2,7 +2,7 @@ name: Build & Release
 
 on:
   push:
-    branches: ['*']
+    branches: ['main']
     tags: ['v*']
   workflow_dispatch:
     inputs:
@@ -78,11 +78,21 @@ jobs:
 
   release:
     needs: build
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch' && inputs.create_release
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
+      - name: Determine release tag
+        id: tag
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            echo "prerelease=false" >> $GITHUB_OUTPUT
+          else
+            echo "tag=dev-${{ github.sha::7 }}" >> $GITHUB_OUTPUT
+            echo "prerelease=true" >> $GITHUB_OUTPUT
+          fi
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -90,8 +100,9 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: Build ${{ steps.tag.outputs.tag }}
           files: artifacts/**/fileter-*
           draft: false
-          prerelease: false
+          prerelease: ${{ steps.tag.outputs.prerelease }}
+          generate_release_notes: true
