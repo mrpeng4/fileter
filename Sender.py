@@ -53,6 +53,7 @@ def sender_side():
     print("Waiting for a receiver...")
     end_time = time.time() + 300
     receiver_found = False
+    server.settimeout(2)
 
     while time.time() < end_time:
         shouter.sendto(offer, ("255.255.255.255", BROADCAST_PORT))
@@ -127,10 +128,13 @@ def sender_side():
         progress_bar.close()
 
     print("Success!")
-    notification.notify(
-        title="File Sent!",
-        message="Your file has been sent, am i cool ;)",
-        app_name="fileter",
-        timeout=15
-    )
+    try:
+        notification.notify(
+            title="File Sent!",
+            message="Your file has been sent, am i cool ;)",
+            app_name="fileter",
+            timeout=15
+        )
+    except NotImplementedError:
+        print("The notification wasn't sent you, your device isn't supported for notifications :(")
     print("Come back later ;)")

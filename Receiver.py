@@ -105,6 +105,7 @@ def receiver_side():
                 received = received + len(chunk)
                 if progress_bar:
                     progress_bar.update(len(chunk))
+
         except Exception as e:
             print(f"Transfer error: {e}\nThe sender may have closed or network dropped, or disk is full.\nAsk them to resend and check your disk space.")
         finally:
@@ -114,11 +115,14 @@ def receiver_side():
             tcp.close()
 
         print(f"Saved as received_{file_name} | {received/1000000:.2f}MB")
-        notification.notify(
-            title="File received!",
-            message="Your file has been received go check and tell me where to save it ;)",
-            app_name="Fileter",
-            timeout=15
-        )
+        try:
+            notification.notify(
+                title="File received!",
+                message="Your file has been received go check and tell me where to save it ;)",
+                app_name="Fileter",
+                timeout=15
+            )
+        except NotImplementedError:
+            print("The notification wasn't sent you, your device isn't supported for notifications :(")
 
         SaverUI.save_with_prompt("received_" + file_name)
