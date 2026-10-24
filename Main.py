@@ -1,8 +1,16 @@
 import sys
 import Sender
 import Receiver
+import datetime
 
 def main():
+    now = datetime.datetime.now()
+    readable_str = now.strftime("%B %d, %Y at %I:%M %p")
+    try:
+        with open("logs_file_sender.txt", "a+") as logs:
+            logs.write(f"<----------{readable_str}---------->\n")
+    except Exception:
+        print("an error occurred logs weren't generated")
 
     print("+-----------------------------------+")
     print("| [1] Send                          |")

@@ -1,5 +1,6 @@
 import shutil
 from pathlib import Path
+import Save_log
 
 dir_path = Path(__file__).resolve().parent
 
@@ -15,8 +16,10 @@ def get_saved_path() -> str:
             if content:
                 return content
         except OSError:
+            Save_log.enter_log("Could not read saved path config")
             print("Could not read your saved path config.\nUsing default Downloads folder instead.\nYour custom path will work again after a restart.")
         except UnicodeDecodeError:
+            Save_log.enter_log("Config file corrupted")
             print("Could not read your saved path config.\nConfig file is corrupted. Using default Downloads folder.")
     return str_downloads_folder
 
@@ -24,6 +27,7 @@ def save_path_to_config(path: str):
     try:
         CONFIG_FILE.write_text(path)
     except OSError:
+        Save_log.enter_log("Could not save path config")
         print("Could not save your preferred path.\nConfig file might be locked or read-only.\nYou'll need to re-enter the path next time.")
 
 def save_file_to_destination(file_name, destination: str = None):
@@ -43,14 +47,17 @@ def save_file_to_destination(file_name, destination: str = None):
         destination_folder.mkdir(parents=True, exist_ok=True)
         shutil.move(str(source_file), str(destination_path))
         print(f"Saving file to {str_downloads_folder}")
+        Save_log.enter_log("File saved successfully")
         print(f"Successfully moved {source_file.name} to {destination_folder}")
-
-
     except FileNotFoundError:
+        Save_log.enter_log("Received file not found")
         print("Error: The received file could not be found.")
     except PermissionError:
+        Save_log.enter_log("Permission denied moving file")
         print("Error: You do not have permission to access the path or the folder.")
     except shutil.Error:
+        Save_log.enter_log("File move failed (shutil)")
         print("File move failed - might be in use or cross-device.\nTry copying manually.")
     except OSError as e:
+        Save_log.enter_log("OS error moving file")
         print(f"Something went wrong moving the file: {e}\nCheck destination folder exists and you have write access.")

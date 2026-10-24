@@ -2,6 +2,7 @@ import socket
 import tqdm
 import SaverUI
 from plyer import notification
+import Save_log
 
 BROADCAST_PORT = 5000
 TCP_PORT = 6000
@@ -16,6 +17,7 @@ def receiver_side():
     try:
         receiver.bind(("0.0.0.0", BROADCAST_PORT))
     except OSError:
+        Save_log.enter_log("Port occupied error")
         print("The port seems to be occupied. Please try again in a few minutes.\nThis happens because someone else is currently waiting to receive a file.\nMulti-user support is coming later, just wait for now :)")
         return
     else:
@@ -23,6 +25,7 @@ def receiver_side():
         try:
             data, addr = receiver.recvfrom(BUFFER_SIZE)
         except socket.timeout:
+            Save_log.enter_log("No sender found (timeout)")
             print("Timed out waiting for a sender.\nNo one broadcasted a file in 5 minutes.\nTry again when someone wants to send.")
             receiver.close()
             return
@@ -35,9 +38,11 @@ def receiver_side():
             file_size = int(parts[2])
             sender_ip = addr[0]
         except UnicodeDecodeError:
+            Save_log.enter_log("Unicode decode error")
             print("Received a garbled message from the sender.\nTheir broadcast was corrupted. Ask them to restart and try again.")
             return
         except (IndexError, ValueError):
+            Save_log.enter_log("Malformed broadcast data")
             print("Received an incomplete message from the sender.\nThe broadcast data was malformed. Ask them to restart and try again.")
             return
 
@@ -53,11 +58,13 @@ def receiver_side():
         try:
             user_answer = input("Do you want to receive this file: ").lower().strip()
         except (KeyboardInterrupt, EOFError):
+            Save_log.enter_log("User cancelled receive prompt")
             print("\nYou exited the prompt.\nNo file received. Run the receiver again when ready.")
             return
         print("\n")
 
         if user_answer != "1":
+            Save_log.enter_log("User declined file")
             print("No selected file not saved")
             return
 
@@ -67,9 +74,11 @@ def receiver_side():
         try:
             tcp.connect((sender_ip, TCP_PORT))
         except ConnectionRefusedError:
+            Save_log.enter_log("Connection refused by sender")
             print("Connection refused by sender.\nThey may have closed or aren't accepting connections.\nAsk them to restart the sender.")
             return
         except OSError as e:
+            Save_log.enter_log("Failed to connect to sender")
             print(f"Could not connect to sender: {e}\nCheck network and try again.")
             return
         else:
@@ -81,10 +90,12 @@ def receiver_side():
         try:
             f = open("received_" + file_name, "wb")
         except PermissionError:
+            Save_log.enter_log("Permission denied creating file")
             print("Can't create the received file.\nCheck disk space and folder permissions.\nTry running from a different location.")
             tcp.close()
             return
         except OSError as e:
+            Save_log.enter_log("OS error creating file")
             print(f"Could not create the file: {e}\nDisk might be full or path invalid.")
             tcp.close()
             return
@@ -108,6 +119,7 @@ def receiver_side():
                     progress_bar.update(len(chunk))
 
         except Exception as e:
+            Save_log.enter_log("Transfer interrupted")
             print(f"Transfer error: {e}\nThe sender may have closed or network dropped, or disk is full.\nAsk them to resend and check your disk space.")
         finally:
             f.close()
@@ -115,6 +127,7 @@ def receiver_side():
                 progress_bar.close()
             tcp.close()
 
+        Save_log.enter_log("File received successfully")
         print(f"received as received_{file_name} | {received/1000000:.2f}MB")
         try:
             notification.notify(
@@ -124,6 +137,7 @@ def receiver_side():
                 timeout=15
             )
         except NotImplementedError:
+            Save_log.enter_log("Notification not supported")
             print("The notification wasn't sent you, your device isn't supported for notifications :(")
 
         SaverUI.save_with_prompt("received_" + file_name)
