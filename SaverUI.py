@@ -22,8 +22,11 @@ def save_with_prompt(file_name: str):
         else:
             Saver.save_file_to_destination(file_name)
     elif saver_input == "y":
+        str_downloads_folder = Saver.get_saved_path()
+        print(f"Saving file to {str_downloads_folder}")
         Saver.save_file_to_destination(file_name)
     elif saver_input == "d":
+        print("Deleting file...")
         source_file = Saver.dir_path / file_name
         try:
             if source_file.exists():

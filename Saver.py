@@ -42,6 +42,7 @@ def save_file_to_destination(file_name, destination: str = None):
     try:
         destination_folder.mkdir(parents=True, exist_ok=True)
         shutil.move(str(source_file), str(destination_path))
+        print(f"Saving file to {str_downloads_folder}")
         print(f"Successfully moved {source_file.name} to {destination_folder}")
 
 

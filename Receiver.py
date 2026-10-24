@@ -76,6 +76,7 @@ def receiver_side():
             print("Receiving file...")
 
         progress_bar = tqdm.tqdm(unit="B", unit_scale=True, unit_divisor=1000, total=file_size)
+        print("[Control + C] To Cancel")
 
         try:
             f = open("received_" + file_name, "wb")
@@ -114,7 +115,7 @@ def receiver_side():
                 progress_bar.close()
             tcp.close()
 
-        print(f"Saved as received_{file_name} | {received/1000000:.2f}MB")
+        print(f"received as received_{file_name} | {received/1000000:.2f}MB")
         try:
             notification.notify(
                 title="File received!",
