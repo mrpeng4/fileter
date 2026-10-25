@@ -181,3 +181,4 @@ cython_debug/
 .cursorindexingignore
 Test.py
 Test.py
+*.txt

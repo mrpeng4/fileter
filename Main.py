@@ -9,6 +9,7 @@ def main():
     try:
         with open("logs_file_sender.txt", "a+") as logs:
             logs.write(f"<----------{readable_str}---------->\n")
+            logs.write(f"App initialized")
     except Exception:
         print("an error occurred logs weren't generated")
 

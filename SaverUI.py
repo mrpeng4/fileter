@@ -1,5 +1,6 @@
 from pathlib import Path
 import Saver
+import Save_log
 
 def save_with_prompt(file_name: str):
     print("Where do you want to save the file?\n")
@@ -18,28 +19,37 @@ def save_with_prompt(file_name: str):
         new_path = settings_submenu()
         if new_path:
             Saver.save_path_to_config(new_path)
+            Save_log.enter_log(f"Changed the path to: {new_path}")
             Saver.save_file_to_destination(file_name, new_path)
+            Save_log.enter_log(f"File {file_name} saved to: {new_path}")
         else:
             Saver.save_file_to_destination(file_name)
+            Save_log.enter_log(f"File {file_name} saved to Downloads")
     elif saver_input == "y":
         str_downloads_folder = Saver.get_saved_path()
         print(f"Saving file to {str_downloads_folder}")
         Saver.save_file_to_destination(file_name)
+        Save_log.enter_log(f"File {file_name} saved to Downloads")
     elif saver_input == "d":
+
         print("Deleting file...")
         source_file = Saver.dir_path / file_name
         try:
             if source_file.exists():
                 source_file.unlink()
                 print(f"Deleted Successfully: {file_name}")
+                Save_log.enter_log(f"File {file_name} Deleted")
                 print("Come back later ;)")
             else:
                 print("File not found, nothing to delete.")
+                Save_log.enter_log(f"File not found, nothing to delete.")
                 print("Come back later ;)")
         except PermissionError:
             print("Could not delete the file.\nIt might be open elsewhere or read-only.\nDelete it manually later.")
+            Save_log.enter_log(f"Could not delete the file.\nIt might be open elsewhere or read-only.")
         except OSError as e:
             print(f"Could not delete the file: {e}\nDelete it manually later.")
+            Save_log.enter_log(f"Could not delete the file: {e}\nDelete it manually later.")
     else:
         print("Invalid choice. Saving to default location.")
         Saver.save_file_to_destination(file_name)
