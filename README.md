@@ -25,6 +25,16 @@ python Main.py
 # Enter file path
 ```
 
+### Or download a release build
+
+Prebuilt binaries for Windows, macOS, and Linux are attached to each [GitHub Release](https://github.com/<your-username>/fileter/releases). Download the one for your platform:
+
+- `fileter-windows-latest.exe` (Windows)
+- `fileter-macos-latest` (macOS)
+- `fileter-ubuntu-latest` (Linux)
+
+Make it executable (`chmod +x fileter-macos-latest` on macOS/Linux) and run it instead of `python Main.py`.
+
 ## Requirements
 
 - Python 3.10+

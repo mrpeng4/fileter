@@ -1,2 +1,3 @@
-tqdm >= 4.65.0
-plyer >= 2.1.0
+tqdm
+plyer
+pygame-ce

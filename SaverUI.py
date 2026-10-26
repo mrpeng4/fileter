@@ -1,6 +1,7 @@
 from pathlib import Path
 import Saver
 import Save_log
+import pyperclip
 
 def save_with_prompt(file_name: str):
     print("Where do you want to save the file?\n")
@@ -19,17 +20,18 @@ def save_with_prompt(file_name: str):
         new_path = settings_submenu()
         if new_path:
             Saver.save_path_to_config(new_path)
-            Save_log.enter_log(f"Changed the path to: {new_path}")
+            Save_log.enter_log("Changed the path", saved_path=new_path)
             Saver.save_file_to_destination(file_name, new_path)
-            Save_log.enter_log(f"File {file_name} saved to: {new_path}")
+            pyperclip.copy(new_path)
+            Save_log.enter_log("File saved", file_name=file_name, saved_path=new_path)
         else:
             Saver.save_file_to_destination(file_name)
-            Save_log.enter_log(f"File {file_name} saved to Downloads")
+            Save_log.enter_log("File saved to Downloads", file_name=file_name, saved_path=Saver.get_saved_path())
     elif saver_input == "y":
-        str_downloads_folder = Saver.get_saved_path()
-        print(f"Saving file to {str_downloads_folder}")
-        Saver.save_file_to_destination(file_name)
-        Save_log.enter_log(f"File {file_name} saved to Downloads")
+        saved_path = Saver.get_saved_path()
+        Saver.save_file_to_destination(file_name, saved_path)
+        pyperclip.copy(saved_path)
+        Save_log.enter_log("File saved", file_name=file_name, saved_path=saved_path)
     elif saver_input == "d":
 
         print("Deleting file...")
@@ -38,18 +40,18 @@ def save_with_prompt(file_name: str):
             if source_file.exists():
                 source_file.unlink()
                 print(f"Deleted Successfully: {file_name}")
-                Save_log.enter_log(f"File {file_name} Deleted")
+                Save_log.enter_log("File deleted", file_name=file_name)
                 print("Come back later ;)")
             else:
                 print("File not found, nothing to delete.")
-                Save_log.enter_log(f"File not found, nothing to delete.")
+                Save_log.enter_log("File not found, nothing to delete.", file_name=file_name)
                 print("Come back later ;)")
         except PermissionError:
             print("Could not delete the file.\nIt might be open elsewhere or read-only.\nDelete it manually later.")
-            Save_log.enter_log(f"Could not delete the file.\nIt might be open elsewhere or read-only.")
+            Save_log.enter_log("Could not delete the file", file_name=file_name)
         except OSError as e:
             print(f"Could not delete the file: {e}\nDelete it manually later.")
-            Save_log.enter_log(f"Could not delete the file: {e}\nDelete it manually later.")
+            Save_log.enter_log(f"Could not delete the file: {e}", file_name=file_name)
     else:
         print("Invalid choice. Saving to default location.")
         Saver.save_file_to_destination(file_name)

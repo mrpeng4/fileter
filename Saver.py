@@ -2,7 +2,7 @@ import shutil
 from pathlib import Path
 import Save_log
 
-dir_path = Path(__file__).resolve().parent
+dir_path = Path.cwd()
 
 downloads_folder = Path.home() / "Downloads"
 str_downloads_folder = str(downloads_folder)
@@ -46,18 +46,18 @@ def save_file_to_destination(file_name, destination: str = None):
     try:
         destination_folder.mkdir(parents=True, exist_ok=True)
         shutil.move(str(source_file), str(destination_path))
-        print(f"Saving file to {str_downloads_folder}")
-        Save_log.enter_log("File saved successfully")
+        print(f"Saving file to {destination_folder}")
+        Save_log.enter_log("File saved successfully", file_name=source_file.name, saved_path=str(destination_path))
         print(f"Successfully moved {source_file.name} to {destination_folder}")
     except FileNotFoundError:
-        Save_log.enter_log("Received file not found")
+        Save_log.enter_log("Received file not found", file_name=source_file.name)
         print("Error: The received file could not be found.")
     except PermissionError:
-        Save_log.enter_log("Permission denied moving file")
+        Save_log.enter_log("Permission denied moving file", file_name=source_file.name, saved_path=str(destination_path))
         print("Error: You do not have permission to access the path or the folder.")
     except shutil.Error:
-        Save_log.enter_log("File move failed (shutil)")
+        Save_log.enter_log("File move failed (shutil)", file_name=source_file.name, saved_path=str(destination_path))
         print("File move failed - might be in use or cross-device.\nTry copying manually.")
     except OSError as e:
-        Save_log.enter_log("OS error moving file")
+        Save_log.enter_log("OS error moving file", file_name=source_file.name, saved_path=str(destination_path))
         print(f"Something went wrong moving the file: {e}\nCheck destination folder exists and you have write access.")
